@@ -38,6 +38,7 @@ The jobs are failing because the app contains:
 3. **Dependency Scan (Trivy FS)**: Flags outdated Python packages (`Flask==2.0.0`, `requests==2.20.0`, `urllib3==1.24.2`) containing known high/critical CVEs in `requirements.txt`.
 4. **Container Image Scan (Trivy Image)**: Flags multiple system package vulnerabilities in the old `python:3.9-slim-buster` base image in `Dockerfile`.
 
+
 ---
 
 ## Step 3: Remediate the Vulnerabilities
