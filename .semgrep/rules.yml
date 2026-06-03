@@ -1,7 +1,0 @@
-rules:
-  - id: no-os-system
-    patterns:
-      - pattern: os.system(...)
-    message: "Anti-pattern: Do not use os.system() because it executes commands in a subshell and is vulnerable to shell injection. Use subprocess.run() with shell=False instead."
-    languages: [python]
-    severity: ERROR

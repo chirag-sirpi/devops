@@ -1,0 +1,13 @@
+rules:
+  - id: no-os-system
+    patterns:
+      - pattern: os.system(...)
+    message: >-
+      Use subprocess.run() instead of os.system(). os.system() is vulnerable
+      to shell injection and provides no output capture or error handling.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - "CWE-78: Improper Neutralization of Special Elements used in an OS Command"

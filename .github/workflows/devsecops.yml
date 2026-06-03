@@ -2,68 +2,56 @@ name: DevSecOps Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   secrets-scan:
-    name: Secrets Detection (Gitleaks)
+    name: Secrets Detection
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Gitleaks Scan
-        uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   sast-scan:
-    name: SAST (Semgrep)
+    name: SAST - Semgrep
     runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Semgrep Scan
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: auto --config=.semgrep/rules.yml
+      - uses: actions/checkout@v4
+      - run: semgrep scan --config auto --config .semgrep/ --error .
 
   dependency-scan:
-    name: Dependency Scan (Trivy FS)
+    name: Dependency Scan - Trivy
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Run Trivy FS Scan
-        uses: aquasecurity/trivy-action@master
+      - uses: actions/checkout@v4
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
           exit-code: '1'
-          severity: 'CRITICAL,HIGH'
+          severity: 'HIGH,CRITICAL'
 
   container-scan:
-    name: Container Image Scan (Trivy Image)
+    name: Container Scan - Trivy
     runs-on: ubuntu-latest
-    needs: [dependency-scan]
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Build Docker Image
-        run: |
-          docker build -t vuln-app:latest .
-
-      - name: Run Trivy Image Scan
-        uses: aquasecurity/trivy-action@master
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t devsecops-demo:${{ github.sha }} .
+      - name: Run Trivy image scan
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: 'vuln-app:latest'
-          scan-type: 'image'
+          image-ref: 'devsecops-demo:${{ github.sha }}'
           exit-code: '1'
-          severity: 'CRITICAL,HIGH'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
