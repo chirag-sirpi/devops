@@ -37,3 +37,27 @@ The jobs are failing because the app contains:
 2. **SAST (Semgrep)**: Flags a SQL injection vulnerability, insecure host binding, and an SQLite in-memory database connection in `app.py`, as well as the container running as root in `Dockerfile`.
 3. **Dependency Scan (Trivy FS)**: Flags outdated Python packages (`Flask==2.0.0`, `requests==2.20.0`, `urllib3==1.24.2`) containing known high/critical CVEs in `requirements.txt`.
 4. **Container Image Scan (Trivy Image)**: Flags multiple system package vulnerabilities in the old `python:3.9-slim-buster` base image in `Dockerfile`.
+
+---
+
+## Step 3: Remediate the Vulnerabilities
+
+### Question: What are we doing in this step?
+**Answer:**
+In this step, I'm fixing each category of security issues in the Flask app (secrets, SQL injection, outdated packages, container config) so that the pipeline can run against a secure codebase and verify the remediation.
+
+### Question: How did you fix the SQL injection vulnerability in app.py?
+**Answer:**
+I replaced the f-string query with a parameterized SQL query: `SELECT * FROM users WHERE name = ?` and passed the user input as a query parameter tuple `(username,)`. The `?` placeholder ensures that SQLite treats user inputs strictly as data values rather than executable SQL code, eliminating the SQL injection risk.
+
+### Question: What were the four vulnerability categories you fixed, and how did you fix each one?
+**Answer:**
+I fixed secrets by moving them to environment variables loaded via `os.getenv`. SQL injection by using query parameterization (the `?` placeholder in SQLite). dependencies by upgrading packages to secure versions (`Flask>=3.0.3`, `requests>=2.32.2`, `urllib3>=2.2.1`) in `requirements.txt`. and the container by switching the base image to `python:3.12-alpine` and running under a non-root user (`appuser`).
+
+---
+
+## Step 4: Verify the Hardened Pipeline
+
+### Question: What are we doing in this step?
+**Answer:**
+In this step, I'm pushing the remediated code to GitHub so that I can confirm that all 4 security scanning jobs in the workflow pass successfully (turn green).
