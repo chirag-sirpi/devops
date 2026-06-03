@@ -1,7 +1,7 @@
 rules:
-  - id: avoid-sqlite-in-memory
+  - id: no-os-system
     patterns:
-      - pattern: sqlite3.connect(':memory:')
-    message: "Anti-pattern: In-memory SQLite database should not be used in Flask app because it does not persist data across requests/restarts."
+      - pattern: os.system(...)
+    message: "Anti-pattern: Do not use os.system() because it executes commands in a subshell and is vulnerable to shell injection. Use subprocess.run() with shell=False instead."
     languages: [python]
     severity: ERROR

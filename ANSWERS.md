@@ -62,3 +62,31 @@ I fixed secrets by moving them to environment variables loaded via `os.getenv`. 
 ### Question: What are we doing in this step?
 **Answer:**
 In this step, I'm pushing the remediated code to GitHub so that I can confirm that all 4 security scanning jobs in the workflow pass successfully (turn green).
+
+---
+
+## Secret Mission: Custom Semgrep Rule
+
+### Question: What pattern syntax did your custom rule use to match os.system() calls, and why is this approach better than a regex?
+**Answer:**
+In this project extension, I used `os.system(...)` to match the pattern because Semgrep parses the code's Abstract Syntax Tree (AST) to match the call structurally. This is better than a regex because it is resilient to variations in whitespace, single/double quotes, variable names, and multi-line formatting, preventing false positives and negatives.
+
+### Question: Which 4 security jobs ran in your pipeline, and what does each one scan for?
+**Answer:**
+The 4 jobs are:
+1. **Secrets Detection (Gitleaks)**: Scans Git commits and history for hardcoded secrets, keys, or access tokens.
+2. **SAST (Semgrep)**: Scans the application source code for patterns indicating software security vulnerabilities like SQL Injection, custom code anti-patterns, or bad practices.
+3. **Dependency Scan (Trivy FS)**: Scans project package manifests (such as `requirements.txt`) for known vulnerabilities (CVEs) in third-party libraries.
+4. **Container Image Scan (Trivy Image)**: Scans the compiled container image filesystem and its base OS libraries for operating system and application dependency vulnerabilities.
+
+### Question: Thanks for doing this project!
+**Answer:**
+I did this project today to learn how to design, implement, and run a multi-stage security pipeline using GitHub Actions and remediate real code, dependency, and container vulnerabilities. Another skill I want to learn is dynamic application security testing (DAST) using OWASP ZAP in a Kubernetes environment.
+
+### Question: How long did it take you to complete this project?
+**Answer:**
+This project took me approximately 1 hour to complete. The most challenging part was purging the local Git repository history to ensure Gitleaks was satisfied after fixing the hardcoded credentials, and configuring custom Semgrep rules to detect in-memory SQLite connections.
+
+### Question: What were the key tools and concepts you learnt in this project?
+**Answer:**
+The key tools I used include Gitleaks, Semgrep, Trivy, and GitHub Actions. Key concepts I learnt include static application security testing (SAST), software composition analysis (SCA), secrets detection and lifecycle remediation, container image security hardening using Alpine base images, and running non-root container contexts.

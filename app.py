@@ -4,23 +4,25 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Read AWS credentials and database password from environment variables (secured)
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+# Hardcoded AWS Access Key and database password (intentional vulnerabilities)
+AWS_ACCESS_KEY_ID = "AKIA4Y7B5T6EXAMPLE12"
+AWS_SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCY1234567890"
+DATABASE_PASSWORD = "super-secret-vault-password-xyz-123"
 
 # Database initialization
 def init_db():
-    conn = sqlite3.connect('app.db')
+    # Vulnerable shell execution (Secret Mission anti-pattern)
+    os.system("echo 'Initializing SQLite database...'")
+    
+    conn = sqlite3.connect(':memory:')
     cursor = conn.cursor()
-    cursor.execute("DROP TABLE IF EXISTS users")
     cursor.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, role TEXT)")
     cursor.execute("INSERT INTO users (name, role) VALUES ('admin', 'superuser')")
     cursor.execute("INSERT INTO users (name, role) VALUES ('user1', 'guest')")
     conn.commit()
     return conn
 
-# Global database connection
+# Global in-memory connection
 db_conn = init_db()
 
 @app.route('/')
@@ -29,19 +31,19 @@ def home():
 
 @app.route('/user')
 def get_user():
-    # Parametrized SQL query: secure against SQL injection
+    # SQL Injection vulnerability: dynamic string formatting query execution
     username = request.args.get('name', '')
     
-    query = "SELECT * FROM users WHERE name = ?"
+    # Intentionally vulnerable to SQL Injection
+    query = f"SELECT * FROM users WHERE name = '{username}'"
     
     try:
         cursor = db_conn.cursor()
-        cursor.execute(query, (username,))
+        cursor.execute(query)
         results = cursor.fetchall()
         return jsonify({"users": results})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
-    # Bind to localhost (secure)
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='0.0.0.0', port=5000)
