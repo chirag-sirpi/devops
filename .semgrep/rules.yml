@@ -1,0 +1,7 @@
+rules:
+  - id: avoid-sqlite-in-memory
+    patterns:
+      - pattern: sqlite3.connect(':memory:')
+    message: "Anti-pattern: In-memory SQLite database should not be used in Flask app because it does not persist data across requests/restarts."
+    languages: [python]
+    severity: ERROR
